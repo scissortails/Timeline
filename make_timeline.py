@@ -7,12 +7,16 @@ import datetime
 import json
 import os.path
 import sys
-import tkFont
-import Tkinter
+# import tkFont
+import tkinter.font as tkFont # Rewrite
+# import Tkinter
+import tkinter as Tkinter # Rewrite
 
 class Colors:
 	black = '#000000'
 	gray = '#C0C0C0'
+	red = '#FF0000'
+    
 
 class Timeline:
 	def __init__(self, filename):
@@ -124,6 +128,7 @@ class Timeline:
 		if color in self.markers:
 			start_marker, end_marker = self.markers[color]
 		else:
+            # Arrow markers for eras are added here
 			start_marker = self.drawing.marker(insert=(0,3), size=(10,10), orient='auto')
 			start_marker.add(self.drawing.path("M6,0 L6,7 L0,3 L6,0", fill=color))
 			self.drawing.defs.add(start_marker)
@@ -157,8 +162,10 @@ class Timeline:
 			t0 = self.datetime_from_string(era[1])
 			t1 = self.datetime_from_string(era[2])
 			# add marks on axis
+            # Starting marker
 			self.add_axis_label(t0, str(t0[0]), tick=False, fill=Colors.black)
-			self.add_axis_label(t1, str(t1[0]), tick=False, fill=Colors.black)			
+			# End marker
+			self.add_axis_label(t1, str(t1[0]), tick=False, fill=Colors.red, mod_height=23)			
 
 	def add_axis_label(self, dt, label, **kwargs):
 		if self.tick_format:
@@ -167,7 +174,9 @@ class Timeline:
 		if percent_width < 0 or percent_width > 1:
 			return
 		x = int(percent_width*self.width + 0.5)
-		dy = 5
+		# dy = 5 # Axis label height
+		mod_height = kwargs.get('mod_height', 5)
+		dy = mod_height
 		# add tick on line
 		add_tick = kwargs.get('tick', True)
 		if add_tick:
@@ -176,7 +185,7 @@ class Timeline:
 		# add label
 		fill = kwargs.get('fill', Colors.gray)
 		transform = "rotate(180, %i, 0)" % (x)
-		self.g_axis.add(self.drawing.text(label, insert=(x, -2*dy), stroke='none', fill=fill, font_family='Helevetica', font_size='6pt', text_anchor='end', writing_mode='tb', transform=transform))			
+		self.g_axis.add(self.drawing.text(label, insert=(x, -2*dy), stroke='none', fill=fill, font_family='Helevetica', font_size='3pt', text_anchor='end', writing_mode='tb', transform=transform))			
 		h = self.get_text_metrics('Helevetica', 6, label)[0] + 2*dy
 		self.max_label_height = max(self.max_label_height, h)
 
@@ -219,7 +228,7 @@ class Timeline:
 			#self.drawing.add(self.drawing.circle((left, y), stroke='red', stroke_width=2))		
 			path_data = 'M%i,%i L%i,%i L%i,%i' % (x, 0, x, y, x - self.callout_size[0], y)
 			self.g_axis.add(self.drawing.path(path_data, stroke=event_color, stroke_width=1, fill='none'))
-			self.g_axis.add(self.drawing.text(event, insert=(x - self.callout_size[0] - self.text_fudge[0], y + self.text_fudge[1]), stroke='none', fill=event_color, font_family='Helevetica', font_size='6pt', text_anchor='end'))
+			self.g_axis.add(self.drawing.text(event, insert=(x - self.callout_size[0] - self.text_fudge[0], y + self.text_fudge[1]), stroke='none', fill=event_color, font_family='Helevetica', font_size='4pt', text_anchor='end'))
 			self.add_axis_label(event_date, str(event_date[0]), tick=False, fill=Colors.black)
 			self.g_axis.add(self.drawing.circle((x, 0), r=4, stroke=event_color, stroke_width=1, fill='white'))
 			prev_x.append(x)
@@ -239,17 +248,17 @@ class Timeline:
 		return w, h
 
 def usage():
-	print 'Usage: ./make_timeline.py in.json > out.svg'
+	print('Usage: ./make_timeline.py in.json > out.svg')
 	sys.exit(-1)
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
-		print 'missing input filename'
+		print('missing input filename')
 		usage()
 	filename = sys.argv[1]
 	if not os.path.isfile(filename):
-		print 'file %s not found' % filename
+		print('file %s not found' % filename)
 		sys.exit(-1)
 	timeline = Timeline(filename)
 	timeline.build()
-	print timeline.to_string().encode('utf-8')
+	print(timeline.to_string()) # Removed utf-8 encoding

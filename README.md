@@ -1,5 +1,5 @@
 # Timeline
-A tool for creating SVG timelines from JSON.  
+A tool for creating SVG timelines from JSON. Mildly modified to work with Python 3.*.
 
 ### Example
 
